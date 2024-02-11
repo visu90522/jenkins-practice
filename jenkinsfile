@@ -1,27 +1,49 @@
 pipeline {
-    agent any
+    agent { node { label 'AGENT-1' } }
+    options {
+        ansiColor('xterm')
+    }
 
     stages {
-        stage('Build') {
+        stage('Init') {
             steps {
-                echo 'Building..'
+                sh'''
+                    cd 01-vpc
+                    ls -ltr
+                    pwd
+                    terraform init
+                '''
+            }
+        }
+        stage('Plan') {
+            steps {
+                sh'''
+                    ls -ltr
+                    pwd
+                    cd 01-vpc
+                    terraform plan
+                '''
+            }
+        }
+        stage('Approve') {
+            steps{
+                input "Shall I apply?"
+            }
+        }
+
+        stage('Apply') {
+            steps{
+                
                 sh '''
-                  ls -lrt
-                  pwd
-                  echo "HI"
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
+                    pwd
+                    ls -ltr
+                    cd 01-vpc
+                    terraform apply -auto-approve
+                '''
             }
         }
     }
+
     post { 
         always { 
             echo 'I will always run whether job is success or not'
@@ -34,5 +56,3 @@ pipeline {
         }
     }
 }
-
-#hhhh
